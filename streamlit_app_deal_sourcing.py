@@ -6,17 +6,18 @@ import joblib
 st.set_page_config(page_title="Altor Deal Sourcing Classifier", layout="wide")
 
 # ----------------------------------
-# Sidebar: App description and instructions
+# Sidebar: Navigation, description and instructions
 # ----------------------------------
 st.sidebar.title("Altor Deal Sourcing Classifier")
-st.sidebar.image("1714028331090.jpeg", use_container_width=True)
+st.sidebar.image("altor_logo.jpeg", use_container_width=True)
 st.sidebar.markdown("""
 **App Description:**
 
-This internal application is designed exclusively for **Altor**. It leverages a pre-trained Random Forest model to classify companies as **High Potential** or **Low Potential** for deal sourcing. This tool aids our investment team in quickly identifying promising opportunities based on key financial and operational metrics.
+This internal application is designed exclusively for **Altor**, a private equity firm based in Stockholm. It leverages a pre-trained Random Forest model to classify companies as **High Potential** or **Low Potential** for deal sourcing. This tool aids our investment team in quickly identifying promising opportunities based on key financial and operational metrics.
 
 **Instructions:**
 - Enter the details of the new company in the form.
+- Use the slider to set the confidence threshold.
 - Click **"Classify Company"** to receive the prediction.
 - The app will display the classification along with the model’s confidence level.
 
@@ -24,7 +25,24 @@ This internal application is designed exclusively for **Altor**. It leverages a 
 """)
 
 # ----------------------------------
-# Main page
+# Sidebar: Threshold selection with explanation
+# ----------------------------------
+threshold = st.sidebar.slider("Select confidence threshold", 0.50, 0.95, 0.80, 0.01)
+st.sidebar.markdown("""
+**Threshold Levels Explanation:**
+
+- **0.50 (High Sensitivity):**  
+  The model is very sensitive and will classify many companies as *High Potential*, even if the confidence is moderate. This setting is useful for discovery, ensuring you don’t miss potential opportunities, but may include more false positives.
+
+- **0.80 (Balanced Approach):**  
+  This default setting offers a balanced trade-off between sensitivity and precision. It attempts to capture most promising companies while keeping false positives at a reasonable level.
+
+- **0.95 (High Precision):**  
+  The model is very strict and will only classify companies as *High Potential* if it is very confident. This reduces false positives significantly but risks omitting some true opportunities.
+""")
+
+# ----------------------------------
+# Main page: Prediction Input
 # ----------------------------------
 st.title("Altor Deal Sourcing Classifier")
 st.write("### Please enter the details of the new company:")
@@ -40,7 +58,7 @@ num_funding_rounds = st.number_input("Number of Funding Rounds", min_value=1, ma
 has_patents = st.selectbox("Has Patents?", ["No", "Yes"]) == "Yes"
 has_top_tier_investor = st.selectbox("Has Top-Tier Investor?", ["No", "Yes"]) == "Yes"
 founder_prev_exit = st.selectbox("Founder Has Previous Exit?", ["No", "Yes"]) == "Yes"
-linkedin_followers = st.number_input("Instagram Followers", min_value=0, value=12000)
+linkedin_followers = st.number_input("LinkedIn Followers", min_value=0, value=12000)
 web_traffic_rank = st.number_input("Web Traffic Rank (lower is better)", min_value=1, value=300000)
 press_mentions_last_6m = st.number_input("Press Mentions in Last 6 Months", min_value=0, value=5)
 country = st.selectbox("Country", ['Germany', 'France', 'Sweden', 'Italy', 'Netherlands', 'Spain'])
@@ -53,7 +71,7 @@ model = joblib.load("deal_sourcing_model.pkl")
 feature_columns = joblib.load("feature_columns.pkl")
 
 # ----------------------------------
-# Prediction button
+# Prediction button and logic
 # ----------------------------------
 if st.button("Classify Company"):
     # Create a dictionary with input values
@@ -67,10 +85,10 @@ if st.button("Classify Company"):
         'has_patents': has_patents,
         'has_top_tier_investor': has_top_tier_investor,
         'founder_prev_exit': founder_prev_exit,
-        'instagram_followers': linkedin_followers,
+        'linkedin_followers': linkedin_followers,
         'web_traffic_rank': web_traffic_rank,
         'press_mentions_last_6m': press_mentions_last_6m,
-        # Include categorical variables to be encoded later
+        # Include categorical variables for later encoding
         'country': country,
         'sector': sector
     }
@@ -89,12 +107,14 @@ if st.button("Classify Company"):
     # Reorder the columns to match the training order
     input_df = input_df[feature_columns]
     
-    # Make the prediction using the pre-trained model
-    prediction = model.predict(input_df)[0]
-    # Assuming the class 'True' corresponds to "High Potential"
-    probability = model.predict_proba(input_df)[0][1]
+    # Obtain the prediction probability for the "High Potential" class
+    proba = model.predict_proba(input_df)[0][1]
+    
+    # Apply the user-selected threshold
+    prediction = proba >= threshold
+    label = "High Potential" if prediction else "Low Potential"
     
     # Display the result
-    label = "High Potential" if prediction else "Low Potential"
     st.success(f"Company **{company_name}** is classified as: **{label}**")
-    st.info(f"Model Confidence: **{probability * 100:.1f}%**")
+    st.info(f"Model Confidence: **{proba * 100:.1f}%** (Threshold: {threshold * 100:.1f}%)")
+    
