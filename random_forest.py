@@ -8,10 +8,61 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Dataset
-df = pd.read_csv(r"/Users/gio/Downloads/EU_Startup_DealSourcing.csv")
+df = pd.read_csv("EU_Startup_DealSourcing.csv")
 
 # Show head
 print(df.head())
+
+# Funding Raised distribution
+
+plt.figure(figsize=(8, 5))
+sns.histplot(df['funding_raised'], bins=30, kde=True)
+plt.title("Distribution of Funding Raised")
+plt.xlabel("Revenue")
+plt.ylabel("Frequency")
+plt.tight_layout()
+plt.show()
+
+# correlation matrix
+
+plt.figure(figsize=(12, 10))
+numeric_df = df.select_dtypes(include=[np.number])
+corr_matrix = numeric_df.corr()
+
+sns.heatmap(corr_matrix, cmap="coolwarm", annot=False)
+plt.title("Correlation Heatmap (Numerical Features)")
+plt.tight_layout()
+plt.show()
+
+# Outliers identification
+
+plt.figure(figsize=(8, 5))
+sns.boxplot(x=df['funding_raised'])
+plt.title("Boxplot of Funding Raised")
+plt.xlabel("Funding")
+plt.tight_layout()
+plt.show()
+
+# Outlier ratio for numerical variables
+def outlier_percentage(df):
+    outlier_stats = {}
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+
+    for col in numeric_cols:
+        Q1 = df[col].quantile(0.25)
+        Q3 = df[col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        outliers = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
+        percentage = 100 * len(outliers) / len(df)
+        outlier_stats[col] = round(percentage, 2)
+    
+    return pd.Series(outlier_stats, name="Outlier %")
+
+# Show results
+outlier_percentages = outlier_percentage(df)
+print(outlier_percentages.sort_values(ascending=False))
 
 # Preprocessing
 df = df.drop(columns=['company_name'])
