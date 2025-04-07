@@ -19,6 +19,8 @@ This internal application is designed exclusively for **Altor**. It leverages a 
 - Enter the details of the new company in the form.
 - Click **"Classify Company"** to receive the prediction.
 - The app will display the classification along with the model’s confidence level.
+
+**Company Website:** [altor.com](https://www.altor.com)
 """)
 
 # ----------------------------------
