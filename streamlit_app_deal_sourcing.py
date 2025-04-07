@@ -8,8 +8,11 @@ st.set_page_config(page_title="Altor Deal Sourcing Classifier", layout="wide")
 # ----------------------------------
 # Sidebar: Navigation, description and instructions
 # ----------------------------------
+
 st.sidebar.title("Altor Deal Sourcing Classifier")
-st.sidebar.image("altor_logo.png", use_container_width=True)
+from PIL import Image
+image = Image.open("altor_logo.png")
+st.sidebar.image(image, use_container_width=True)
 st.sidebar.markdown("""
 **App Description:**
 
