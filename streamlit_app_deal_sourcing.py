@@ -13,7 +13,7 @@ st.sidebar.image("1714028331090.jpeg", use_container_width=True)
 st.sidebar.markdown("""
 **App Description:**
 
-This application uses a pre-trained Random Forest model to classify companies as **High Potential** or **Low Potential** for deal sourcing. It is designed for private equity and venture capital screening by leveraging financial and traction metrics.
+This internal application is designed exclusively for **Altor**. It leverages a pre-trained Random Forest model to classify companies as **High Potential** or **Low Potential** for deal sourcing. This tool aids our investment team in quickly identifying promising opportunities based on key financial and operational metrics.
 
 **Instructions:**
 - Enter the details of the new company in the form.
